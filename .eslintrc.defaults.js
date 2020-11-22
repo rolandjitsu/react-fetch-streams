@@ -2,6 +2,7 @@ module.exports = {
   parser: '@babel/eslint-parser',
   extends: [
     'eslint:recommended',
+    'plugin:compat/recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:prettier/recommended'
