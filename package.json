@@ -8,6 +8,9 @@
   "files": [
     "dist/**/*",
     "src/*",
+    "!src/.eslintrc.js",
+    "!src/*.test.js",
+    "typings/*",
     "LICENSE"
   ],
   "keywords": [

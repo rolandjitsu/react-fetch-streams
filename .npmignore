@@ -1,7 +1,7 @@
 coverage
 node_modules
+src/.eslintrc.js
 src/*.test.js
-test
 .editorconfig
 .eslintignore
 .eslintrc.defaults.js
