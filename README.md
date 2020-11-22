@@ -97,6 +97,8 @@ You can expect this hook to work wherever the following APIs are supported:
 * [AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController#Browser_compatibility)
 * [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal#Browser_compatibility)
 
+Check [browserslist.dev](https://bit.ly/2Hu7QBW) for an overview.
+
 ### Contribute
 --------------
 If you wish to contribute, please use the following guidelines:

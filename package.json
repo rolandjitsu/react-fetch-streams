@@ -80,7 +80,20 @@
     "node": ">= 10"
   },
   "browserslist": [
-    "> 0.25%",
-    "not dead"
+    "defaults",
+    "not ie 11",
+    "not ie_mob 11",
+    "not op_mini all",
+    "not op_mob 59",
+    "Chrome >= 66",
+    "Edge >= 16",
+    "Firefox >= 57",
+    "Opera >= 53",
+    "Safari >= 11.1",
+    "Android >= 66",
+    "and_chr >= 66",
+    "and_ff >= 57",
+    "ios_saf >= 11.3",
+    "Samsung >= 9.0"
   ]
 }
