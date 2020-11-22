@@ -1,0 +1,13 @@
+coverage
+node_modules
+src/*.test.js
+test
+.editorconfig
+.eslintignore
+.eslintrc.defaults.js
+.eslintrc.js
+babel.config.js
+jest.config.js
+rollup.config.js
+setupTests.js
+yarn.lock
