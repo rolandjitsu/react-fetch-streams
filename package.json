@@ -4,7 +4,7 @@
   "description": "React hook for the Streams API",
   "main": "./dist/index.js",
   "module": "./dist/es/index.js",
-  "typings": "./dist/index.d.ts",
+  "typings": "./typings/index.d.ts",
   "files": [
     "dist/**/*",
     "src/*",
