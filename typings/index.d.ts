@@ -1,4 +1,7 @@
-export function useStream(url: string, options?: ReactFetchStreamsOptions): ReactFetchStreamsHook;
+export function useStream(
+  url: string,
+  options?: ReactFetchStreamsOptions
+): ReactFetchStreamsHook;
 
 export interface ReactFetchStreamsOptions {
   onNext?: (res: Response) => void;
