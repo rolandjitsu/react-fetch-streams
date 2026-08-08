@@ -10,6 +10,7 @@
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Server-Sent Events](#server-sent-events)
 - [Browser Support](#browser-support)
 - [Contribute](#contribute)
 
@@ -104,6 +105,32 @@ const MyComponent = props => {
 ```
 
 For more examples, please check the [tests](./src/stream.test.js).
+
+### Server-Sent Events
+
+---
+
+For [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events),
+`useEventSource` wraps the native `EventSource`, so the browser handles
+reconnection and `Last-Event-ID` resumption:
+
+```jsx
+import React, {useCallback, useState} from 'react';
+import {useEventSource} from 'react-fetch-streams';
+
+const MyComponent = props => {
+    const [data, setData] = useState({});
+    const onMessage = useCallback(evt => setData(JSON.parse(evt.data)), []);
+    // Handle named events with `onEvent: {eventName: handler}`.
+    useEventSource('http://myserver.io/events', {onMessage});
+
+    return <React.Fragment>{data.myProp}</React.Fragment>;
+};
+```
+
+`EventSource` can only issue GET requests and cannot send custom headers or a
+body. When you need those (for example an `Authorization` header), run SSE over
+`fetch` instead.
 
 ### Browser Support
 
