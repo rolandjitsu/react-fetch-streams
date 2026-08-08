@@ -38,13 +38,22 @@ For CDN, you can use [unpkg](https://unpkg.com):
 The global namespace for react-fetch-streams is `reactFetchStreams`:
 
 ```html
+<!-- The UMD build reads a global `React`. React 19 no longer ships a UMD build,
+     so for <script> usage load React 18's UMD, or use the ESM build on React 19+. -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script type="text/javascript" src="https://unpkg.com/react-fetch-streams/dist/index.min.js"></script>
 
 <script type="text/javascript">
     const {useStream} = reactFetchStreams;
-    ...
+    // ...
 </script>
 ```
+
+On React 19+, drop the UMD build and import the ESM entry through a bundler or
+an [import map](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap)
+instead.
+
+A runnable demo lives in [`examples/streaming-counter`](./examples/streaming-counter).
 
 ### Usage
 

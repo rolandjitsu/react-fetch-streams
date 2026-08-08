@@ -16,6 +16,12 @@
       "env": {
         "node": true
       }
+    },
+    {
+      "files": ["examples/**/*.js"],
+      "env": {
+        "node": true
+      }
     }
   ]
 }
