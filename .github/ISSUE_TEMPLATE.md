@@ -1,6 +1,6 @@
 <!-- Before creating an issue please make sure you are using the latest version of this package. -->
 
-**Do you want to request a *feature* or report a *bug*?**
+**Do you want to request a _feature_ or report a _bug_?**
 <!-- Please ask questions on StackOverflow. Questions will most likely be closed. -->
 
 - [ ] I found a bug

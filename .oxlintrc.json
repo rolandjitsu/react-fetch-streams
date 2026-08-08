@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "import"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": ["dist", "coverage"],
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "vitest.setup.js"],
+      "plugins": ["vitest"],
+      "env": {
+        "node": true
+      }
+    }
+  ]
+}
