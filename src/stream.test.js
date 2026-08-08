@@ -143,6 +143,41 @@ test('useStream() close()', async () => {
   expect(onCancel).toHaveBeenCalledTimes(1);
 });
 
+test('useStream() unmount', async () => {
+  const onCancel = vi.fn();
+  mockFetch(
+    () =>
+      new ReadableStream({
+        cancel: onCancel,
+        async start(ctrl) {
+          ctrl.enqueue(JSON.stringify({count: 1}));
+          await sleep(1);
+          ctrl.enqueue(JSON.stringify({count: 2}));
+          ctrl.close();
+        }
+      })
+  );
+
+  const onNext = vi.fn();
+  const onError = vi.fn();
+  const onDone = vi.fn();
+
+  const {unmount} = renderHook(() =>
+    useStream('/counter', {onNext, onError, onDone})
+  );
+
+  await sleep(0.1);
+  expect(onNext).toHaveBeenCalledTimes(1);
+
+  unmount();
+
+  await sleep(1);
+  // Unmounting aborts before the second chunk is read.
+  expect(onNext).toHaveBeenCalledTimes(1);
+  expect(onCancel).toHaveBeenCalledTimes(1);
+  expect(onError).not.toHaveBeenCalled();
+});
+
 test('useStream() URL change', async () => {
   const onCancel = vi.fn();
   mockFetch(
