@@ -129,8 +129,27 @@ const MyComponent = props => {
 ```
 
 `EventSource` can only issue GET requests and cannot send custom headers or a
-body. When you need those (for example an `Authorization` header), run SSE over
-`fetch` instead.
+body. When you need those (for example an `Authorization` header), use
+`useEventStream`, which parses SSE over `fetch` and reconnects with
+`Last-Event-ID` itself:
+
+```jsx
+import React, {useCallback, useState} from 'react';
+import {useEventStream} from 'react-fetch-streams';
+
+const fetchParams = {headers: {Authorization: 'Bearer token'}};
+
+const MyComponent = props => {
+    const [data, setData] = useState({});
+    const onEvent = useCallback(evt => setData(JSON.parse(evt.data)), []);
+    useEventStream('http://myserver.io/events', {onEvent, fetchParams});
+
+    return <React.Fragment>{data.myProp}</React.Fragment>;
+};
+```
+
+`onEvent` receives `{event, data, id}`. Reconnection is on by default; pass
+`retry: false` to disable it or `retry: <ms>` to set the delay.
 
 ### Browser Support
 
