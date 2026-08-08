@@ -13,3 +13,20 @@ export interface ReactFetchStreamsOptions {
 export interface ReactFetchStreamsHook {
   close: () => void;
 }
+
+export function useEventSource(
+  url: string,
+  options?: EventSourceOptions
+): EventSourceHook;
+
+export interface EventSourceOptions {
+  onMessage?: (event: MessageEvent) => void;
+  onEvent?: Record<string, (event: MessageEvent) => void>;
+  onOpen?: (event: Event) => void;
+  onError?: (event: Event) => void;
+  withCredentials?: boolean;
+}
+
+export interface EventSourceHook {
+  close: () => void;
+}
