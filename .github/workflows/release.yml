@@ -9,6 +9,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  id-token: write # OIDC token for npm trusted publishing
 
 jobs:
   release:
@@ -16,11 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # semantic-release needs full history and tags
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      - name: Update npm # trusted publishing needs npm >= 11.5.1
+        run: npm install -g npm@^11
       - name: Install dependencies
         run: npm ci
       - name: Test
@@ -28,7 +33,6 @@ jobs:
       - name: Build
         run: npm run build
       - name: Release
-        run: npx semantic-release@24
+        run: npx semantic-release@25
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
