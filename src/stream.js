@@ -34,19 +34,20 @@ export function useStream(url, params) {
   }, []);
 
   useEffect(() => {
-    if (streamRef.current) {
-      streamRef.current.abort();
-    }
-    streamRef.current = new AbortController();
+    const controller = new AbortController();
+    streamRef.current = controller;
     startStream(url, {
-      onNext: onNext,
-      onError: onError,
-      onDone: onDone,
+      onNext,
+      onError,
+      onDone,
       fetchParams: {
         ...params.fetchParams,
-        signal: streamRef.current.signal
+        signal: controller.signal
       }
     });
+    // Abort on unmount and before re-subscribing, so a changed url/params or a
+    // torn-down component cancels the in-flight fetch and reader.
+    return () => controller.abort();
   }, [url, params.fetchParams]);
 
   useEffect(() => {
@@ -89,13 +90,15 @@ async function startStream(url, {onNext, onError, onDone, fetchParams}) {
     const reader = res.body.getReader();
 
     if (fetchParams.signal instanceof AbortSignal) {
-      fetchParams.signal.addEventListener('abort', evt => reader.cancel(evt), {
-        once: true,
-        passive: true
-      });
+      // cancel() rejects if the stream has already errored; we surface stream
+      // errors through read() below, so ignore the rejection here.
+      fetchParams.signal.addEventListener(
+        'abort',
+        () => reader.cancel().catch(() => {}),
+        {once: true, passive: true}
+      );
     }
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         const {done, value} = await reader.read();
