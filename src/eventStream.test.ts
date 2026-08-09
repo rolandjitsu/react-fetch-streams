@@ -160,6 +160,43 @@ test('useEventStream() close() stops the stream', async () => {
   expect(onError).not.toHaveBeenCalled();
 });
 
+test('useEventStream() strips a leading BOM', async () => {
+  const bom = String.fromCharCode(0xfeff);
+  mockFetch([`${bom}data: hi\n\n`], {end: false});
+  const onEvent = vi.fn();
+  renderHook(() => useEventStream('/sse', {onEvent, retry: false}));
+
+  await sleep(0.15);
+  expect(onEvent).toHaveBeenCalledTimes(1);
+  expect(onEvent.mock.calls[0][0].data).toEqual('hi');
+});
+
+test('useEventStream() ignores an id with NUL and a non-numeric retry', async () => {
+  const nul = String.fromCharCode(0);
+  // `data:hi` has no space after the colon, so the value is kept verbatim.
+  mockFetch([`id: a${nul}b\nretry: nope\ndata:hi\n\n`], {end: false});
+  const onEvent = vi.fn();
+  renderHook(() => useEventStream('/sse', {onEvent, retry: false}));
+
+  await sleep(0.15);
+  expect(onEvent).toHaveBeenCalledTimes(1);
+  expect(onEvent.mock.calls[0][0]).toEqual({
+    event: 'message',
+    data: 'hi',
+    id: '' // id ignored because it contained a NUL
+  });
+});
+
+test('useEventStream() treats a colon-less line as a field with empty value', async () => {
+  mockFetch(['data\ndata: x\n\n'], {end: false});
+  const onEvent = vi.fn();
+  renderHook(() => useEventStream('/sse', {onEvent, retry: false}));
+
+  await sleep(0.15);
+  expect(onEvent).toHaveBeenCalledTimes(1);
+  expect(onEvent.mock.calls[0][0].data).toEqual('\nx');
+});
+
 function sleep(sec: number) {
   return new Promise<void>(resolve => {
     setTimeout(resolve, sec * 1000);
