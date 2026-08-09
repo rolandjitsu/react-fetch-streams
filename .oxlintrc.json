@@ -11,10 +11,13 @@
   "ignorePatterns": ["dist", "coverage"],
   "overrides": [
     {
-      "files": ["**/*.test.js", "vitest.setup.js"],
+      "files": ["**/*.test.ts", "vitest.setup.js"],
       "plugins": ["vitest"],
       "env": {
         "node": true
+      },
+      "rules": {
+        "vitest/require-mock-type-parameters": "off"
       }
     },
     {

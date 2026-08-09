@@ -9,8 +9,8 @@ afterEach(() => {
 
 // The hook only reads `res.body`, so a fetch response is faked as `{body}`.
 // Passing a ReadableStream straight through matches how a browser exposes it.
-function mockFetch(makeStream) {
-  const fetch = vi.fn(async () => ({body: makeStream()}));
+function mockFetch(makeStream: () => ReadableStream) {
+  const fetch = vi.fn(async (..._args: unknown[]) => ({body: makeStream()}));
   vi.stubGlobal('fetch', fetch);
   return fetch;
 }
@@ -270,7 +270,10 @@ test('useStream() fetch params change', async () => {
   expect(onDone).toHaveBeenCalledTimes(2);
   expect(onCancel).toHaveBeenCalledTimes(1);
 
-  expect(fetch.mock.calls.at(-1)[1].mode).toEqual('cors');
+  const lastInit = fetch.mock.calls[
+    fetch.mock.calls.length - 1
+  ][1] as RequestInit;
+  expect(lastInit.mode).toEqual('cors');
 });
 
 test('useStream() onNext() change', async () => {
@@ -436,8 +439,8 @@ test('useStream() no params', async () => {
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 
-function sleep(sec) {
-  return new Promise(resolve => {
+function sleep(sec: number) {
+  return new Promise<void>(resolve => {
     setTimeout(resolve, sec * 1000);
   });
 }

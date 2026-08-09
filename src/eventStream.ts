@@ -1,38 +1,42 @@
 import {useCallback, useEffect, useRef} from 'react';
 
-/**
- * @typedef {object} EventStreamEvent
- * @property {string} event - Event name; `message` when the stream omits one
- * @property {string} data - Event payload with the trailing newline removed
- * @property {string} id - Last seen event id (empty if none)
- */
+export interface EventStreamEvent {
+  /** Event name; `message` when the stream omits one. */
+  event: string;
+  /** Payload with the trailing newline removed. */
+  data: string;
+  /** Last seen event id (empty if none). */
+  id: string;
+}
 
-/**
- * @typedef {object} EventStreamHook
- * @property {function()} close - Close the connection and stop reconnecting
- */
+export interface EventStreamOptions {
+  onEvent?: (event: EventStreamEvent) => void;
+  onOpen?: (res: Response) => void;
+  onError?: (err: Error) => void;
+  fetchParams?: RequestInit;
+  /** Reconnect delay in ms; `false` disables reconnecting. Defaults to 3000. */
+  retry?: number | false;
+}
+
+export interface EventStreamHook {
+  close: () => void;
+}
 
 /**
  * React hook for [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
  * parsed over `fetch`. Unlike `useEventSource` it can send custom headers, a
  * body, and any method (via `fetchParams`), at the cost of reconnection being
  * handled here rather than by the browser.
- * @param {string} url
- * @param {object} [params]
- * @param {function(EventStreamEvent)} [params.onEvent]
- * @param {function(Response)} [params.onOpen]
- * @param {function(Error)} [params.onError]
- * @param {RequestInit} [params.fetchParams]
- * @param {number|false} [params.retry=3000] - Reconnect delay in ms; `false` disables reconnecting
- *
- * @returns {EventStreamHook}
  */
-export function useEventStream(url, params) {
+export function useEventStream(
+  url: string,
+  params?: EventStreamOptions
+): EventStreamHook {
   if (typeof params !== 'object' || params === null) {
     params = {};
   }
 
-  const streamRef = useRef();
+  const streamRef = useRef<AbortController | undefined>(undefined);
   const onEvent = useRef(params.onEvent);
   const onOpen = useRef(params.onOpen);
   const onError = useRef(params.onError);
@@ -69,10 +73,22 @@ export function useEventStream(url, params) {
   return {close};
 }
 
-async function startEventStream(url, controller, fetchParams, retry, refs) {
+interface EventStreamRefs {
+  onEvent: {current: EventStreamOptions['onEvent']};
+  onOpen: {current: EventStreamOptions['onOpen']};
+  onError: {current: EventStreamOptions['onError']};
+}
+
+async function startEventStream(
+  url: string,
+  controller: AbortController,
+  fetchParams: RequestInit | undefined,
+  retry: number | false | undefined,
+  refs: EventStreamRefs
+): Promise<void> {
   const {onEvent, onOpen, onError} = refs;
   const {signal} = controller;
-  const reconnect = retry !== false && retry !== null;
+  const reconnect = retry !== false;
   let retryMs = typeof retry === 'number' ? retry : 3000;
   let lastEventId = '';
 
@@ -94,6 +110,9 @@ async function startEventStream(url, controller, fetchParams, retry, refs) {
         onOpen.current(res);
       }
 
+      if (!res.body) {
+        throw new TypeError('Response has no readable body');
+      }
       const reader = res.body.getReader();
       signal.addEventListener('abort', () => reader.cancel().catch(() => {}), {
         once: true,
@@ -120,7 +139,7 @@ async function startEventStream(url, controller, fetchParams, retry, refs) {
           bom = false;
         }
 
-        let nl;
+        let nl: number;
         while ((nl = buf.indexOf('\n')) !== -1) {
           let line = buf.slice(0, nl);
           buf = buf.slice(nl + 1);
@@ -161,7 +180,7 @@ async function startEventStream(url, controller, fetchParams, retry, refs) {
           } else if (field === 'data') {
             data += val + '\n';
           } else if (field === 'id') {
-            if (!val.includes('\u0000')) {
+            if (!val.includes(String.fromCharCode(0))) {
               lastEventId = val;
             }
           } else if (field === 'retry' && /^\d+$/.test(val)) {
@@ -174,7 +193,7 @@ async function startEventStream(url, controller, fetchParams, retry, refs) {
         return;
       }
       if (typeof onError.current === 'function') {
-        onError.current(e);
+        onError.current(e as Error);
       }
     }
 
@@ -185,7 +204,7 @@ async function startEventStream(url, controller, fetchParams, retry, refs) {
   }
 }
 
-function delay(ms, signal) {
+function delay(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise(resolve => {
     if (signal.aborted) {
       return resolve();

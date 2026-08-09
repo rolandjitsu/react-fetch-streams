@@ -7,12 +7,17 @@
   "module": "./dist/index.mjs",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
-  "types": "./typings/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./typings/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -20,8 +25,7 @@
   "files": [
     "dist",
     "src",
-    "typings",
-    "!src/**/*.test.js",
+    "!src/**/*.test.ts",
     "LICENSE"
   ],
   "keywords": [
@@ -44,6 +48,7 @@
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
     "build": "tsdown",
+    "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
@@ -53,13 +58,14 @@
     "test:cov": "vitest run --coverage",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {},
   "peerDependencies": {
     "react": ">= 16.8"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@vitest/coverage-v8": "^4.1.10",
     "jsdom": "^30.0.1",
     "oxlint": "^1.77.0",
@@ -67,6 +73,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   },
   "engines": {

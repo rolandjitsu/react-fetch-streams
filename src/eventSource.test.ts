@@ -3,21 +3,28 @@ import {cleanup, renderHook} from '@testing-library/react';
 import {useEventSource} from './eventSource';
 
 // jsdom has no EventSource; a controllable fake lets tests drive it.
+type ESEvent = {type: string; data?: unknown};
+type ESHandler = (event: ESEvent) => void;
+
 class FakeEventSource {
-  constructor(url, init) {
+  static instances: FakeEventSource[] = [];
+  url: string;
+  withCredentials: boolean;
+  closed = false;
+  onopen: ESHandler | null = null;
+  onmessage: ESHandler | null = null;
+  onerror: ESHandler | null = null;
+  listeners: Record<string, ESHandler[]> = {};
+
+  constructor(url: string, init?: {withCredentials?: boolean}) {
     this.url = url;
     this.withCredentials = Boolean(init && init.withCredentials);
-    this.closed = false;
-    this.onopen = null;
-    this.onmessage = null;
-    this.onerror = null;
-    this.listeners = {};
     FakeEventSource.instances.push(this);
   }
-  addEventListener(type, fn) {
+  addEventListener(type: string, fn: ESHandler) {
     (this.listeners[type] ||= []).push(fn);
   }
-  removeEventListener(type, fn) {
+  removeEventListener(type: string, fn: ESHandler) {
     this.listeners[type] = (this.listeners[type] || []).filter(f => f !== fn);
   }
   close() {
@@ -26,13 +33,13 @@ class FakeEventSource {
   emitOpen() {
     this.onopen?.({type: 'open'});
   }
-  emitMessage(data) {
+  emitMessage(data: unknown) {
     this.onmessage?.({type: 'message', data});
   }
   emitError() {
     this.onerror?.({type: 'error'});
   }
-  emitNamed(type, data) {
+  emitNamed(type: string, data: unknown) {
     (this.listeners[type] || []).forEach(fn => fn({type, data}));
   }
 }
@@ -47,7 +54,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const last = () => FakeEventSource.instances.at(-1);
+const last = () =>
+  FakeEventSource.instances[FakeEventSource.instances.length - 1];
 
 test('useEventSource() messages, open, error', () => {
   const onMessage = vi.fn();
