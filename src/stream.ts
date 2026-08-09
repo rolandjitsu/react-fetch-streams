@@ -1,28 +1,30 @@
 import {useCallback, useEffect, useRef} from 'react';
 
-/**
- * @typedef {object} StreamHook
- * @property {function()} close - Close the stream
- */
+export interface ReactFetchStreamsOptions {
+  onNext?: (res: Response) => void;
+  onError?: (err: Error) => void;
+  onDone?: () => void;
+  fetchParams?: RequestInit;
+}
+
+export interface ReactFetchStreamsHook {
+  close: () => void;
+}
 
 /**
  * React hook for the [Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API).
- * Use this hook to stream data from a URL.
- * @param {string} url
- * @param {object} [params]
- * @param {function(Response)} [params.onNext]
- * @param {function(Error)} [params.onError]
- * @param {function()} [params.onDone]
- * @param {RequestInit} [params.fetchParams]
- *
- * @returns {StreamHook}
+ * Streams a response body from `url`, invoking `onNext` with a `Response` for
+ * each chunk the reader yields.
  */
-export function useStream(url, params) {
+export function useStream(
+  url: string,
+  params?: ReactFetchStreamsOptions
+): ReactFetchStreamsHook {
   if (typeof params !== 'object' || params === null) {
     params = {};
   }
 
-  const streamRef = useRef();
+  const streamRef = useRef<AbortController | undefined>(undefined);
   const onNext = useRef(params.onNext);
   const onError = useRef(params.onError);
   const onDone = useRef(params.onDone);
@@ -65,19 +67,20 @@ export function useStream(url, params) {
   return {close};
 }
 
-/**
- * Use this function to start streaming data from an URL
- * @param {string} url
- * @param {object} params
- * @param {React.MutableRefObject<function(Response)>} params.onNext
- * @param {React.MutableRefObject<function(Error)>} params.onError
- * @param {React.MutableRefObject<function()>} params.onDone
- * @param {RequestInit} params.fetchParams
- */
-async function startStream(url, {onNext, onError, onDone, fetchParams}) {
-  const errCb = err => {
+interface StreamRefs {
+  onNext: {current: ReactFetchStreamsOptions['onNext']};
+  onError: {current: ReactFetchStreamsOptions['onError']};
+  onDone: {current: ReactFetchStreamsOptions['onDone']};
+  fetchParams: RequestInit;
+}
+
+async function startStream(
+  url: string,
+  {onNext, onError, onDone, fetchParams}: StreamRefs
+): Promise<void> {
+  const errCb = (err: unknown) => {
     if (typeof onError.current === 'function') {
-      onError.current(err);
+      onError.current(err as Error);
     }
   };
 
@@ -87,6 +90,9 @@ async function startStream(url, {onNext, onError, onDone, fetchParams}) {
       method: 'GET'
     });
 
+    if (!res.body) {
+      throw new TypeError('Response has no readable body');
+    }
     const reader = res.body.getReader();
 
     if (fetchParams.signal instanceof AbortSignal) {

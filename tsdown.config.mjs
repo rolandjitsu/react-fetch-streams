@@ -1,24 +1,24 @@
 import {defineConfig} from 'tsdown';
 
 const shared = {
-  entry: ['src/index.js'],
+  entry: ['src/index.ts'],
   platform: 'browser',
   target: 'es2019',
-  sourcemap: true,
-  // Types are hand-written in ./typings, not generated from source.
-  dts: false
+  sourcemap: true
 };
 
 export default defineConfig([
-  // ESM (import) + CommonJS (require) for bundlers and Node.
+  // ESM (import) + CommonJS (require) for bundlers and Node, with declarations.
   {
     ...shared,
-    format: ['es', 'cjs']
+    format: ['es', 'cjs'],
+    dts: true
   },
   // Minified UMD for CDN/<script> usage; exposes the `reactFetchStreams` global.
   {
     ...shared,
     format: ['umd'],
+    dts: false,
     globalName: 'reactFetchStreams',
     minify: true,
     outputOptions: {

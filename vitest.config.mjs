@@ -5,12 +5,12 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.js'],
-    include: ['src/**/*.test.js'],
+    include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      include: ['src/**/*.js'],
-      exclude: ['src/**/*.test.js']
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.test.ts']
     }
   }
 });

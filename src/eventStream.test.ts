@@ -9,7 +9,7 @@ afterEach(() => {
 
 // Emit each chunk as encoded bytes so the hook's TextDecoder path runs. A gap
 // between chunks keeps them from coalescing into a single read.
-function sseBody(chunks, {end = true} = {}) {
+function sseBody(chunks: string[], {end = true}: {end?: boolean} = {}) {
   const enc = new TextEncoder();
   return {
     body: new ReadableStream({
@@ -24,8 +24,8 @@ function sseBody(chunks, {end = true} = {}) {
   };
 }
 
-function mockFetch(chunks, opts) {
-  const fetch = vi.fn(async () => sseBody(chunks, opts));
+function mockFetch(chunks: string[], opts?: {end?: boolean}) {
+  const fetch = vi.fn(async (..._args: unknown[]) => sseBody(chunks, opts));
   vi.stubGlobal('fetch', fetch);
   return fetch;
 }
@@ -94,11 +94,12 @@ test('useEventStream() sends fetchParams and an SSE Accept header', async () => 
   );
 
   await sleep(0.1);
-  const init = fetch.mock.calls[0][1];
+  const init = fetch.mock.calls[0][1] as RequestInit;
+  const headers = init.headers as Headers;
   expect(init.method).toEqual('POST');
   expect(init.body).toEqual('q');
-  expect(init.headers.get('Authorization')).toEqual('Bearer t');
-  expect(init.headers.get('Accept')).toEqual('text/event-stream');
+  expect(headers.get('Authorization')).toEqual('Bearer t');
+  expect(headers.get('Accept')).toEqual('text/event-stream');
 });
 
 test('useEventStream() reconnects with Last-Event-ID', async () => {
@@ -159,8 +160,8 @@ test('useEventStream() close() stops the stream', async () => {
   expect(onError).not.toHaveBeenCalled();
 });
 
-function sleep(sec) {
-  return new Promise(resolve => {
+function sleep(sec: number) {
+  return new Promise<void>(resolve => {
     setTimeout(resolve, sec * 1000);
   });
 }

@@ -104,7 +104,7 @@ const MyComponent = props => {
 };
 ```
 
-For more examples, please check the [tests](./src/stream.test.js).
+For more examples, please check the [tests](./src/stream.test.ts).
 
 ### Server-Sent Events
 
