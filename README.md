@@ -108,9 +108,28 @@ const MyComponent = props => {
 > exactly the bytes of each `reader.read()` chunk - it does not buffer or split.
 > The network may split one payload across chunks or coalesce several into one,
 > so `res.json()` per chunk is only safe when the server flushes one complete,
-> self-contained payload per write. For newline-delimited (NDJSON) or otherwise
-> framed streams, buffer and split inside `onNext` yourself; for SSE, use
-> [`useEventStream`](#server-sent-events), which frames events for you.
+> self-contained payload per write. For newline-delimited JSON use
+> `useNdjsonStream` (below); for SSE use [`useEventStream`](#server-sent-events);
+> both frame the stream for you.
+
+#### Newline-delimited JSON
+
+`useNdjsonStream` streams [NDJSON](https://jsonlines.org/), buffering across chunk
+boundaries (with a streaming decoder, so multi-byte characters survive) and
+calling `onData` with each parsed line:
+
+```jsx
+import React, {useCallback, useState} from 'react';
+import {useNdjsonStream} from 'react-fetch-streams';
+
+const MyComponent = props => {
+    const [rows, setRows] = useState([]);
+    const onData = useCallback(row => setRows(prev => prev.concat(row)), []);
+    useNdjsonStream('http://myserver.io/rows', {onData});
+
+    return <React.Fragment>{rows.length}</React.Fragment>;
+};
+```
 
 For more examples, please check the [tests](./src/stream.test.ts).
 
