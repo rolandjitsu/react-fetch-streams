@@ -115,6 +115,9 @@ async function startStream(
           return;
         }
 
+        // Each read() chunk is wrapped as-is; this does not buffer or split, so
+        // a caller needing framing (e.g. one JSON value per message) must do it
+        // in onNext. See useEventStream for SSE framing.
         const res = new Response(value);
         if (typeof onNext.current === 'function') {
           onNext.current(res);

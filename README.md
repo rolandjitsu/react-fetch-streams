@@ -104,6 +104,14 @@ const MyComponent = props => {
 };
 ```
 
+> **Chunk boundaries:** `useStream` calls `onNext` with a `Response` wrapping
+> exactly the bytes of each `reader.read()` chunk - it does not buffer or split.
+> The network may split one payload across chunks or coalesce several into one,
+> so `res.json()` per chunk is only safe when the server flushes one complete,
+> self-contained payload per write. For newline-delimited (NDJSON) or otherwise
+> framed streams, buffer and split inside `onNext` yourself; for SSE, use
+> [`useEventStream`](#server-sent-events), which frames events for you.
+
 For more examples, please check the [tests](./src/stream.test.ts).
 
 ### Server-Sent Events
