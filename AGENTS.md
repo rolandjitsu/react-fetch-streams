@@ -4,7 +4,8 @@ Guidance for AI coding agents in this repo. Human contributors: see the
 [Contribute](./README.md#contribute) section of the README.
 
 This is `react-fetch-streams`: React hooks for streaming a response body over the Fetch + Streams
-APIs (`useStream`) and for Server-Sent Events (`useEventSource`, `useEventStream`). It is a small,
+APIs (`useStream`, plus `useNdjsonStream` for newline-delimited JSON) and for Server-Sent Events
+(`useEventSource`, `useEventStream`). It is a small,
 dependency-free, published npm library written in TypeScript. Keep it that way; think twice before
 adding a runtime dependency.
 
