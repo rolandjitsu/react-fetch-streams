@@ -20,11 +20,10 @@ export interface NdjsonStreamHook {
  */
 export function useNdjsonStream<T = unknown>(
   url: string,
-  params?: NdjsonStreamOptions<T>
+  paramsInput?: NdjsonStreamOptions<T>
 ): NdjsonStreamHook {
-  if (typeof params !== 'object' || params === null) {
-    params = {};
-  }
+  const params: NdjsonStreamOptions<T> =
+    typeof paramsInput === 'object' && paramsInput !== null ? paramsInput : {};
 
   const streamRef = useRef<AbortController | undefined>(undefined);
   const onData = useRef(params.onData);

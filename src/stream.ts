@@ -18,11 +18,10 @@ export interface ReactFetchStreamsHook {
  */
 export function useStream(
   url: string,
-  params?: ReactFetchStreamsOptions
+  paramsInput?: ReactFetchStreamsOptions
 ): ReactFetchStreamsHook {
-  if (typeof params !== 'object' || params === null) {
-    params = {};
-  }
+  const params: ReactFetchStreamsOptions =
+    typeof paramsInput === 'object' && paramsInput !== null ? paramsInput : {};
 
   const streamRef = useRef<AbortController | undefined>(undefined);
   const onNext = useRef(params.onNext);

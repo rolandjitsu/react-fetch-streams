@@ -22,11 +22,10 @@ export interface EventSourceHook {
  */
 export function useEventSource(
   url: string,
-  params?: EventSourceOptions
+  paramsInput?: EventSourceOptions
 ): EventSourceHook {
-  if (typeof params !== 'object' || params === null) {
-    params = {};
-  }
+  const params: EventSourceOptions =
+    typeof paramsInput === 'object' && paramsInput !== null ? paramsInput : {};
 
   const sourceRef = useRef<EventSource | undefined>(undefined);
   const onMessage = useRef(params.onMessage);

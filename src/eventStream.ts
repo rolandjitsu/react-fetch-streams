@@ -30,11 +30,10 @@ export interface EventStreamHook {
  */
 export function useEventStream(
   url: string,
-  params?: EventStreamOptions
+  paramsInput?: EventStreamOptions
 ): EventStreamHook {
-  if (typeof params !== 'object' || params === null) {
-    params = {};
-  }
+  const params: EventStreamOptions =
+    typeof paramsInput === 'object' && paramsInput !== null ? paramsInput : {};
 
   const streamRef = useRef<AbortController | undefined>(undefined);
   const onEvent = useRef(params.onEvent);
