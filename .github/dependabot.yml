@@ -6,6 +6,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     groups:
+      # vitest and its plugins pin each other via peer deps, so they must be
+      # bumped together in a single PR or npm ci fails with ERESOLVE.
+      vitest:
+        patterns:
+          - 'vitest'
+          - '@vitest/*'
       # Patch bumps are batched into one PR that the auto-merge workflow can land.
       patch:
         update-types:
